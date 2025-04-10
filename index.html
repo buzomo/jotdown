@@ -15,26 +15,51 @@
             align-items: center;
             min-height: 100vh;
             flex-direction: column;
+            position: relative;
+            /* ボタンの配置基準 */
         }
 
         #writingArea {
-            background-color: transparent;
-            color: #fff;
             border: none;
             outline: none;
-            font-size: 1.4em;
+            font-size: 1.6em;
             line-height: 1.8;
-            padding: 20px;
+            padding: 10px;
             box-sizing: border-box;
             text-align: center;
             width: 80%;
             resize: none;
-            caret-color: #fff;
             min-height: 100px;
             max-height: 80vh;
             overflow-y: auto;
             margin-bottom: 10px;
+            font-family: serif;
+            /* デフォルトはセリフ体 */
         }
+
+        #writingArea {
+            background-color: transparent;
+            color: #cc8ef5;
+            /* ラベンダー */
+            caret-color: #fbff00;
+            caret-width: 2px;
+            /* カーソルの幅 */
+        }
+
+        #writingArea::selection {
+            background-color: #00ffcc;
+            /* ターコイズ */
+            color: #333333;
+            /* 濃いグレー */
+        }
+
+        ::-moz-selection {
+            background-color: #00ffcc;
+            /* ターコイズ (Firefox用) */
+            color: #333333;
+            /* 濃いグレー (Firefox用) */
+        }
+
 
         ::-webkit-scrollbar {
             width: 2px;
@@ -83,21 +108,179 @@
         #indicator.error {
             background-color: red;
         }
+
+        /* GitHubボタンのスタイル */
+        #githubButton {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #333;
+            /* GitHubっぽい背景色 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 1001;
+            /* indicatorより前面に表示 */
+            opacity: 1;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #githubButton.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #githubButton img {
+            width: 80%;
+            height: 80%;
+            filter: invert(100%);
+            /* 白いアイコンにする */
+        }
+
+        /* 設定ボタンのスタイル */
+        #settingsButton {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 1001;
+            color: #fff;
+            font-size: 1.2em;
+            opacity: 1;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #settingsButton.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 設定モーダルのスタイル */
+        #settingsModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #222;
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            z-index: 1002;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        #settingsModal>div {
+            margin-bottom: 15px;
+        }
+
+        #settingsModal label {
+            display: inline-block;
+            width: 120px;
+            text-align: left;
+            margin-right: 10px;
+        }
+
+        #settingsModal input[type="range"] {
+            width: 200px;
+        }
+
+        #settingsModal .radio-group label {
+            width: auto;
+            margin-right: 15px;
+        }
+
+        #settingsModal.open {
+            display: block;
+        }
+
+        #modalOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+        }
+
+        #modalOverlay.open {
+            display: block;
+        }
     </style>
 </head>
 
 <body>
     <textarea id="writingArea" autofocus></textarea>
     <div id="indicator" class="hidden"></div>
+    <a href="https://github.com/buzomo/jotdown" target="_blank" rel="noopener noreferrer" id="githubButton">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="32" height="32">
+            <path fill-rule="evenodd"
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63.18 1.08.58 1.23.82.72 1.28 1.87.91 2.31.69.22-.72.89-1.2 1.63-1.48-1.31-.15-2.68-.65-2.68-2.9 0-.64.23-1.16.61-1.56-.03-.15-.26-.78.06-1.62 0 0 .52-.17 1.71.6.5-.14 1.03-.22 1.58-.23.55.01 1.08.09 1.58.23 1.19-.77 1.71-.6 1.71-.6.32.84.09 1.47.06 1.62.39.4.61.92.61 1.56 0 2.27-1.37 2.75-2.69 2.9.21.18.42.54.42.82 0 .3-.01.54-.01.82 0 .21.15.46.55.38C13.71 14.53 16 11.54 16 8c0-4.42-3.58-8-8-8z" />
+        </svg>
+    </a>
+    <div id="settingsButton">&#9881;</div>
+    <div id="modalOverlay"></div>
+    <div id="settingsModal">
+        <div>
+            <label for="fontSizeSlider">Font Size:</label>
+            <input type="range" id="fontSizeSlider" min="0.5" max="3" step="0.1" value="1">
+            <span id="fontSizeValue">1em</span>
+        </div>
+        <div>
+            <label for="lineHeightSlider">Line Height:</label>
+            <input type="range" id="lineHeightSlider" min="1" max="3" step="0.1" value="1.5">
+            <span id="lineHeightValue">1.5</span>
+        </div>
+        <div>
+            <label for="letterSpacingSlider">Letter Spacing:</label>
+            <input type="range" id="letterSpacingSlider" min="-0.1" max="0.5" step="0.01" value="0">
+            <span id="letterSpacingValue">0em</span>
+        </div>
+        <div class="radio-group">
+            Font Family:
+            <label><input type="radio" name="fontFamily" value="serif" checked> Serif</label>
+            <label><input type="radio" name="fontFamily" value="sans-serif"> Sans-Serif</label>
+        </div>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const writingArea = document.getElementById('writingArea');
             const localStorageKey = 'myTextAreaData';
+            const editorStyleStorageKey = 'editorStyles';
             const indicator = document.getElementById('indicator');
             const saveDelay = 3000; // 3秒後に保存
+            const githubButton = document.getElementById('githubButton');
+            const hideButtonDelay = 10000; // 10秒
+            const settingsButton = document.getElementById('settingsButton');
+            const settingsModal = document.getElementById('settingsModal');
+            const modalOverlay = document.getElementById('modalOverlay');
+
+            // Settings modal elements
+            const fontSizeSlider = document.getElementById('fontSizeSlider');
+            const fontSizeValueSpan = document.getElementById('fontSizeValue');
+            const lineHeightSlider = document.getElementById('lineHeightSlider');
+            const lineHeightValueSpan = document.getElementById('lineHeightValue');
+            const letterSpacingSlider = document.getElementById('letterSpacingSlider');
+            const letterSpacingValueSpan = document.getElementById('letterSpacingValue');
+            const fontFamilyRadios = document.querySelectorAll('input[name="fontFamily"]');
 
             let isSaving = false;
             let saveTimer;
+            let isTextareaEmpty = true;
+            let hideButtonTimer;
 
             const showIndicator = (message, className = '') => {
                 indicator.textContent = message;
@@ -142,7 +325,7 @@
                 }
             }
 
-            async function pushToGitHub(content) {
+            async function pushToGitHub(content, styles) {
                 const repoUrl = localStorage.getItem('repo_url');
                 const apiKey = localStorage.getItem('gh_token');
                 if (!repoUrl || !apiKey) {
@@ -164,7 +347,7 @@
                             },
                             body: JSON.stringify({
                                 message: `Auto-save ${new Date().toISOString()}`,
-                                content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))),
+                                content: btoa(unescape(encodeURIComponent(JSON.stringify({ text: content, styles: styles }, null, 2)))),
                                 sha: sha
                             }),
                             signal: controller.signal
@@ -213,13 +396,64 @@
                         return null;
                     }
                     const data = await response.json();
-                    const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-                    return content;
+                    const contentData = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+                    return contentData;
                 } catch (error) {
                     showToast(`GitHubからのロードエラー: ${error.message}`, 'error');
                     return null;
                 }
             }
+
+            const loadStyles = () => {
+                const storedStyles = localStorage.getItem(editorStyleStorageKey);
+                if (storedStyles) {
+                    const styles = JSON.parse(storedStyles);
+                    applyStyles(styles);
+                    // Update modal values
+                    fontSizeSlider.value = styles.fontSize.replace('em', '');
+                    fontSizeValueSpan.textContent = styles.fontSize;
+                    lineHeightSlider.value = styles.lineHeight;
+                    lineHeightValueSpan.textContent = styles.lineHeight;
+                    letterSpacingSlider.value = styles.letterSpacing.replace('em', '');
+                    letterSpacingValueSpan.textContent = styles.letterSpacing;
+                    for (const radio of fontFamilyRadios) {
+                        if (radio.value === styles.fontFamily) {
+                            radio.checked = true;
+                            break;
+                        }
+                    }
+                } else {
+                    // デフォルト値を適用
+                    applyStyles({ fontSize: '1em', lineHeight: '1.5', letterSpacing: '0em', fontFamily: 'serif' });
+                    fontSizeSlider.value = 1;
+                    fontSizeValueSpan.textContent = '1em';
+                    lineHeightSlider.value = 1.5;
+                    lineHeightValueSpan.textContent = '1.5';
+                    letterSpacingSlider.value = 0;
+                    letterSpacingValueSpan.textContent = '0em';
+                    document.querySelector('input[name="fontFamily"][value="serif"]').checked = true;
+                }
+            };
+
+            const saveStyles = () => {
+                const styles = {
+                    fontSize: fontSizeSlider.value + 'em',
+                    lineHeight: lineHeightSlider.value,
+                    letterSpacing: letterSpacingSlider.value + 'em',
+                    fontFamily: document.querySelector('input[name="fontFamily"]:checked').value
+                };
+                localStorage.setItem(editorStyleStorageKey, JSON.stringify(styles));
+                applyStyles(styles);
+                return styles;
+            };
+
+            const applyStyles = (styles) => {
+                writingArea.style.fontSize = styles.fontSize;
+                writingArea.style.lineHeight = styles.lineHeight;
+                writingArea.style.letterSpacing = styles.letterSpacing;
+                writingArea.style.fontFamily = styles.fontFamily;
+                adjustHeight();
+            };
 
             const load = async () => {
                 showIndicator('ロード中...', 'updating');
@@ -227,20 +461,63 @@
                 const localDataString = localStorage.getItem(localStorageKey);
                 let localData = localDataString ? JSON.parse(localDataString) : { text: '', LastUpdated: null };
 
+                loadStyles(); // Load editor styles
+
                 if (remoteData && remoteData.text && remoteData.LastUpdated) {
-                    if (!localData.LastUpdated || new Date(remoteData.LastUpdated) > new Date(localData.LastUpdated)) {
+                    const isLocalEmpty = !localData.text;
+                    const isRemoteNewer = !localData.LastUpdated || new Date(remoteData.LastUpdated) > new Date(localData.LastUpdated);
+
+                    if (isLocalEmpty || isRemoteNewer) {
                         writingArea.value = remoteData.text;
                         localData = { text: remoteData.text, LastUpdated: remoteData.LastUpdated };
-                        showToast('GitHubから最新データをロードしました', 'success');
+                        showToast(isLocalEmpty ? 'GitHubから初期データをロードしました' : 'GitHubから最新データをロードしました', 'success');
+                        isTextareaEmpty = false;
+                        clearTimeout(hideButtonTimer);
+                        hideButtonTimer = setTimeout(() => {
+                            githubButton.classList.add('hidden');
+                        }, hideButtonDelay);
+                        if (remoteData.styles) {
+                            applyStyles(remoteData.styles);
+                            // Update modal values based on remote styles
+                            fontSizeSlider.value = remoteData.styles.fontSize.replace('em', '');
+                            fontSizeValueSpan.textContent = remoteData.styles.fontSize;
+                            lineHeightSlider.value = remoteData.styles.lineHeight;
+                            lineHeightValueSpan.textContent = remoteData.styles.lineHeight;
+                            letterSpacingSlider.value = remoteData.styles.letterSpacing.replace('em', '');
+                            letterSpacingValueSpan.textContent = remoteData.styles.letterSpacing;
+                            for (const radio of fontFamilyRadios) {
+                                if (radio.value === remoteData.styles.fontFamily) {
+                                    radio.checked = true;
+                                    break;
+                                }
+                            }
+                            localStorage.setItem(editorStyleStorageKey, JSON.stringify(remoteData.styles));
+                        }
                     } else {
                         writingArea.value = localData.text;
                         showToast('ローカルデータは最新です', 'success');
+                        isTextareaEmpty = !localData.text;
+                        clearTimeout(hideButtonTimer);
+                        if (isTextareaEmpty) {
+                            githubButton.classList.remove('hidden');
+                        } else {
+                            hideButtonTimer = setTimeout(() => {
+                                githubButton.classList.add('hidden');
+                            }, hideButtonDelay);
+                        }
                     }
                 } else if (localData.text) {
                     writingArea.value = localData.text;
                     showToast('ローカルデータをロードしました', 'success');
+                    isTextareaEmpty = false;
+                    clearTimeout(hideButtonTimer);
+                    hideButtonTimer = setTimeout(() => {
+                        githubButton.classList.add('hidden');
+                    }, hideButtonDelay);
                 } else {
                     showIndicator('入力待機');
+                    isTextareaEmpty = true;
+                    githubButton.classList.remove('hidden');
                 }
                 localStorage.setItem(localStorageKey, JSON.stringify(localData));
                 adjustHeight();
@@ -251,9 +528,9 @@
                 if (isSaving) return;
                 isSaving = true;
                 showIndicator('保存中...', 'updating');
-                const contentToSave = { text: writingArea.value, LastUpdated: new Date().toISOString() };
-                localStorage.setItem(localStorageKey, JSON.stringify(contentToSave));
-                const success = await pushToGitHub(contentToSave);
+                const currentStyles = saveStyles();
+                const contentToSave = writingArea.value;
+                const success = await pushToGitHub(contentToSave, currentStyles);
                 if (success) {
                     showToast('保存完了', 'success');
                 }
@@ -266,6 +543,16 @@
                 showIndicator('編集中');
                 clearTimeout(saveTimer);
                 saveTimer = setTimeout(save, saveDelay);
+                const currentTextareaEmpty = writingArea.value.trim() === '';
+                clearTimeout(hideButtonTimer);
+                if (currentTextareaEmpty) {
+                    githubButton.classList.remove('hidden');
+                } else {
+                    hideButtonTimer = setTimeout(() => {
+                        githubButton.classList.add('hidden');
+                    }, hideButtonDelay);
+                }
+                isTextareaEmpty = currentTextareaEmpty;
             };
 
             // 行数に応じてテキストの揃えを調整する関数
@@ -287,6 +574,44 @@
                 }
             };
 
+            // モーダルの開閉
+            settingsButton.addEventListener('click', () => {
+                settingsModal.classList.add('open');
+                modalOverlay.classList.add('open');
+            });
+
+            modalOverlay.addEventListener('click', () => {
+                settingsModal.classList.remove('open');
+                modalOverlay.classList.remove('open');
+                save(); // 設定変更時に保存
+            });
+
+            settingsModal.addEventListener('click', (event) => {
+                event.stopPropagation(); // モーダル内のクリックはオーバーレイを閉じない
+            });
+
+            // 設定変更時のイベント
+            fontSizeSlider.addEventListener('input', () => {
+                fontSizeValueSpan.textContent = fontSizeSlider.value + 'em';
+                applyStyles(saveStyles());
+            });
+
+            lineHeightSlider.addEventListener('input', () => {
+                lineHeightValueSpan.textContent = lineHeightSlider.value;
+                applyStyles(saveStyles());
+            });
+
+            letterSpacingSlider.addEventListener('input', () => {
+                letterSpacingValueSpan.textContent = letterSpacingSlider.value + 'em';
+                applyStyles(saveStyles());
+            });
+
+            fontFamilyRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    applyStyles(saveStyles());
+                });
+            });
+
             // 初期ロード
             load();
 
@@ -301,6 +626,15 @@
 
             // 初期表示
             showIndicator('入力待機');
+            if (writingArea.value.trim() === '') {
+                githubButton.classList.remove('hidden');
+            } else {
+                clearTimeout(hideButtonTimer);
+                hideButtonTimer = setTimeout(() => {
+                    githubButton.classList.add('hidden');
+                }, hideButtonDelay);
+            }
+            isTextareaEmpty = writingArea.value.trim() === '';
         });
     </script>
 </body>
