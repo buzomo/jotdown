@@ -457,20 +457,17 @@
 
             const load = async () => {
                 showIndicator('ロード中...', 'updating');
-                const remoteData = await loadFromGitHub();
                 const localDataString = localStorage.getItem(localStorageKey);
                 let localData = localDataString ? JSON.parse(localDataString) : { text: '', LastUpdated: null };
 
                 loadStyles(); // Load editor styles
 
-                if (remoteData && remoteData.text && remoteData.LastUpdated) {
-                    const isLocalEmpty = !localData.text;
-                    const isRemoteNewer = !localData.LastUpdated || new Date(remoteData.LastUpdated) > new Date(localData.LastUpdated);
-
-                    if (isLocalEmpty || isRemoteNewer) {
+                if (!localData.text) {
+                    const remoteData = await loadFromGitHub();
+                    if (remoteData && remoteData.text !== undefined && remoteData.LastUpdated !== undefined) {
                         writingArea.value = remoteData.text;
                         localData = { text: remoteData.text, LastUpdated: remoteData.LastUpdated };
-                        showToast(isLocalEmpty ? 'GitHubから初期データをロードしました' : 'GitHubから最新データをロードしました', 'success');
+                        showToast('GitHubから初期データをロードしました', 'success');
                         isTextareaEmpty = false;
                         clearTimeout(hideButtonTimer);
                         hideButtonTimer = setTimeout(() => {
@@ -494,17 +491,9 @@
                             localStorage.setItem(editorStyleStorageKey, JSON.stringify(remoteData.styles));
                         }
                     } else {
-                        writingArea.value = localData.text;
-                        showToast('ローカルデータは最新です', 'success');
-                        isTextareaEmpty = !localData.text;
-                        clearTimeout(hideButtonTimer);
-                        if (isTextareaEmpty) {
-                            githubButton.classList.remove('hidden');
-                        } else {
-                            hideButtonTimer = setTimeout(() => {
-                                githubButton.classList.add('hidden');
-                            }, hideButtonDelay);
-                        }
+                        showIndicator('初期データロード失敗', 'error');
+                        isTextareaEmpty = true;
+                        githubButton.classList.remove('hidden');
                     }
                 } else if (localData.text) {
                     writingArea.value = localData.text;
