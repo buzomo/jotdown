@@ -1,4 +1,3 @@
-```markdown
 # 漆黒のtextarea
 
 このシンプルなウェブページは、書くことに集中できる環境を提供します。ロードすると漆黒の画面に中央揃えされたテキストエリアが表示され、すぐに書き始めることができます。
@@ -54,4 +53,3 @@ localStorage.setItem('repo_url', '[https://api.github.com/repos/YOUR_USERNAME/YO
 * オフラインサポート
 
 ---
-```
