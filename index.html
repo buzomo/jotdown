@@ -16,7 +16,6 @@
             min-height: 100vh;
             flex-direction: column;
             position: relative;
-            /* ボタンの配置基準 */
         }
 
         #writingArea {
@@ -34,32 +33,20 @@
             overflow-y: auto;
             margin-bottom: 10px;
             font-family: serif;
-            /* デフォルトはセリフ体 */
-        }
-
-        #writingArea {
             background-color: transparent;
             color: #cc8ef5;
-            /* ラベンダー */
             caret-color: #fbff00;
-            caret-width: 2px;
-            /* カーソルの幅 */
         }
 
         #writingArea::selection {
             background-color: #00ffcc;
-            /* ターコイズ */
             color: #333333;
-            /* 濃いグレー */
         }
 
         ::-moz-selection {
             background-color: #00ffcc;
-            /* ターコイズ (Firefox用) */
             color: #333333;
-            /* 濃いグレー (Firefox用) */
         }
-
 
         ::-webkit-scrollbar {
             width: 2px;
@@ -78,69 +65,6 @@
             background-color: rgba(255, 255, 255, 0.5);
         }
 
-        #indicator {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: auto;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            text-align: center;
-            padding: 5px 0;
-            font-size: 0.8em;
-            z-index: 1000;
-        }
-
-        #indicator.hidden {
-            display: none;
-        }
-
-        #indicator.updating {
-            background-color: lightgray;
-            color: #000;
-        }
-
-        #indicator.success {
-            background-color: green;
-        }
-
-        #indicator.error {
-            background-color: red;
-        }
-
-        /* GitHubボタンのスタイル */
-        #githubButton {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #333;
-            /* GitHubっぽい背景色 */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            z-index: 1001;
-            /* indicatorより前面に表示 */
-            opacity: 1;
-            transition: opacity 0.3s ease-in-out;
-        }
-
-        #githubButton.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        #githubButton img {
-            width: 80%;
-            height: 80%;
-            filter: invert(100%);
-            /* 白いアイコンにする */
-        }
-
         /* 設定ボタンのスタイル */
         #settingsButton {
             position: fixed;
@@ -157,17 +81,17 @@
             z-index: 1001;
             color: #fff;
             font-size: 1.2em;
-            opacity: 1;
+            opacity: 0.2;
             transition: opacity 0.3s ease-in-out;
         }
 
-        #settingsButton.hidden {
-            opacity: 0;
-            pointer-events: none;
+        #settingsButton:hover {
+            opacity: 1;
         }
 
         /* 設定モーダルのスタイル */
         #settingsModal {
+            opacity: .5;
             display: none;
             position: fixed;
             top: 50%;
@@ -224,25 +148,18 @@
 
 <body>
     <textarea id="writingArea" autofocus></textarea>
-    <div id="indicator" class="hidden"></div>
-    <a href="https://github.com/buzomo/jotdown" target="_blank" rel="noopener noreferrer" id="githubButton">
-        <svg viewBox="0 0 16 16" fill="currentColor" width="32" height="32">
-            <path fill-rule="evenodd"
-                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63.18 1.08.58 1.23.82.72 1.28 1.87.91 2.31.69.22-.72.89-1.2 1.63-1.48-1.31-.15-2.68-.65-2.68-2.9 0-.64.23-1.16.61-1.56-.03-.15-.26-.78.06-1.62 0 0 .52-.17 1.71.6.5-.14 1.03-.22 1.58-.23.55.01 1.08.09 1.58.23 1.19-.77 1.71-.6 1.71-.6.32.84.09 1.47.06 1.62.39.4.61.92.61 1.56 0 2.27-1.37 2.75-2.69 2.9.21.18.42.54.42.82 0 .3-.01.54-.01.82 0 .21.15.46.55.38C13.71 14.53 16 11.54 16 8c0-4.42-3.58-8-8-8z" />
-        </svg>
-    </a>
     <div id="settingsButton">&#9881;</div>
     <div id="modalOverlay"></div>
     <div id="settingsModal">
         <div>
             <label for="fontSizeSlider">Font Size:</label>
-            <input type="range" id="fontSizeSlider" min="0.5" max="3" step="0.1" value="1">
-            <span id="fontSizeValue">1em</span>
+            <input type="range" id="fontSizeSlider" min="0.5" max="3" step="0.1" value="1.6">
+            <span id="fontSizeValue">1.6em</span>
         </div>
         <div>
             <label for="lineHeightSlider">Line Height:</label>
-            <input type="range" id="lineHeightSlider" min="1" max="3" step="0.1" value="1.5">
-            <span id="lineHeightValue">1.5</span>
+            <input type="range" id="lineHeightSlider" min="1" max="3" step="0.1" value="1.8">
+            <span id="lineHeightValue">1.8</span>
         </div>
         <div>
             <label for="letterSpacingSlider">Letter Spacing:</label>
@@ -260,10 +177,7 @@
             const writingArea = document.getElementById('writingArea');
             const localStorageKey = 'myTextAreaData';
             const editorStyleStorageKey = 'editorStyles';
-            const indicator = document.getElementById('indicator');
-            const saveDelay = 3000; // 3秒後に保存
-            const githubButton = document.getElementById('githubButton');
-            const hideButtonDelay = 10000; // 10秒
+            const saveDelay = 1000; // 1秒後に保存
             const settingsButton = document.getElementById('settingsButton');
             const settingsModal = document.getElementById('settingsModal');
             const modalOverlay = document.getElementById('modalOverlay');
@@ -277,131 +191,17 @@
             const letterSpacingValueSpan = document.getElementById('letterSpacingValue');
             const fontFamilyRadios = document.querySelectorAll('input[name="fontFamily"]');
 
-            let isSaving = false;
             let saveTimer;
-            let isTextareaEmpty = true;
-            let hideButtonTimer;
 
-            const showIndicator = (message, className = '') => {
-                indicator.textContent = message;
-                indicator.className = `indicator ${className}`;
-                indicator.classList.remove('hidden');
-                if (className === 'success' || className === 'error') {
+            // スマホの場合は自動的にキーボードを表示する
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) {
+                // ページ読み込み後に自動フォーカスしてキーボードを表示
+                window.addEventListener('load', () => {
                     setTimeout(() => {
-                        indicator.classList.add('hidden');
-                        indicator.textContent = '';
-                    }, 1500);
-                }
-            };
-
-            const showToast = (message, type) => {
-                console.log(`[${type.toUpperCase()}] ${message}`);
-                showIndicator(message, type);
-            };
-
-            async function getFileSHA() {
-                const repoUrl = localStorage.getItem('repo_url');
-                const apiKey = localStorage.getItem('gh_token');
-                if (!repoUrl || !apiKey) {
-                    showToast('リポジトリURLまたはAPIキーが設定されていません', 'error');
-                    throw new Error('リポジトリURLまたはAPIキーが設定されていません');
-                }
-                try {
-                    const response = await fetch(
-                        `${repoUrl}/contents/contents.json`,
-                        {
-                            headers: {
-                                'Authorization': `token ${apiKey}`,
-                                'Accept': 'application/vnd.github.v3+json'
-                            }
-                        }
-                    );
-                    if (!response.ok) throw new Error('SHA取得失敗');
-                    const data = await response.json();
-                    return data.sha;
-                } catch (error) {
-                    showToast(`エラー: ${error.message}`, 'error');
-                    throw error;
-                }
-            }
-
-            async function pushToGitHub(content, styles) {
-                const repoUrl = localStorage.getItem('repo_url');
-                const apiKey = localStorage.getItem('gh_token');
-                if (!repoUrl || !apiKey) {
-                    showToast('リポジトリURLまたはAPIキーが設定されていません', 'error');
-                    return false;
-                }
-                const controller = new AbortController();
-                let currentRequest = controller;
-
-                try {
-                    const sha = await getFileSHA();
-                    const response = await fetch(
-                        `${repoUrl}/contents/contents.json`,
-                        {
-                            method: 'PUT',
-                            headers: {
-                                'Authorization': `token ${apiKey}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                message: `Auto-save ${new Date().toISOString()}`,
-                                content: btoa(unescape(encodeURIComponent(JSON.stringify({ text: content, styles: styles }, null, 2)))),
-                                sha: sha
-                            }),
-                            signal: controller.signal
-                        }
-                    );
-
-                    if (response.status === 409) {
-                        throw new Error('sha mismatch');
-                    }
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.message);
-                    }
-
-                    return true;
-                } catch (error) {
-                    if (error.name === 'AbortError') return false;
-                    showToast(`GitHubへの保存エラー: ${error.message}`, 'error');
-                    return false;
-                } finally {
-                    currentRequest = null;
-                }
-            }
-
-            async function loadFromGitHub() {
-                const repoUrl = localStorage.getItem('repo_url');
-                const apiKey = localStorage.getItem('gh_token');
-                if (!repoUrl || !apiKey) {
-                    showToast('リポジトリURLまたはAPIキーが設定されていません', 'error');
-                    return null;
-                }
-                try {
-                    const response = await fetch(
-                        `${repoUrl}/contents/contents.json`,
-                        {
-                            headers: {
-                                'Authorization': `token ${apiKey}`,
-                                'Accept': 'application/vnd.github.v3+json',
-                                'Accept-Charset': 'utf-8'
-                            }
-                        }
-                    );
-                    if (!response.ok) {
-                        showToast('GitHubからのデータ取得に失敗しました', 'error');
-                        return null;
-                    }
-                    const data = await response.json();
-                    const contentData = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-                    return contentData;
-                } catch (error) {
-                    showToast(`GitHubからのロードエラー: ${error.message}`, 'error');
-                    return null;
-                }
+                        writingArea.focus();
+                    }, 100);
+                });
             }
 
             const loadStyles = () => {
@@ -424,11 +224,11 @@
                     }
                 } else {
                     // デフォルト値を適用
-                    applyStyles({ fontSize: '1em', lineHeight: '1.5', letterSpacing: '0em', fontFamily: 'serif' });
-                    fontSizeSlider.value = 1;
-                    fontSizeValueSpan.textContent = '1em';
-                    lineHeightSlider.value = 1.5;
-                    lineHeightValueSpan.textContent = '1.5';
+                    applyStyles({ fontSize: '1.6em', lineHeight: '1.8', letterSpacing: '0em', fontFamily: 'serif' });
+                    fontSizeSlider.value = 1.6;
+                    fontSizeValueSpan.textContent = '1.6em';
+                    lineHeightSlider.value = 1.8;
+                    lineHeightValueSpan.textContent = '1.8';
                     letterSpacingSlider.value = 0;
                     letterSpacingValueSpan.textContent = '0em';
                     document.querySelector('input[name="fontFamily"][value="serif"]').checked = true;
@@ -455,93 +255,35 @@
                 adjustHeight();
             };
 
-            const load = async () => {
-                showIndicator('ロード中...', 'updating');
-                const localDataString = localStorage.getItem(localStorageKey);
-                let localData = localDataString ? JSON.parse(localDataString) : { text: '', LastUpdated: null };
+            const load = () => {
+                loadStyles(); // スタイル設定の読み込み
 
-                loadStyles(); // Load editor styles
-
-                if (!localData.text) {
-                    const remoteData = await loadFromGitHub();
-                    if (remoteData && remoteData.text !== undefined && remoteData.LastUpdated !== undefined) {
-                        writingArea.value = remoteData.text;
-                        localData = { text: remoteData.text, LastUpdated: remoteData.LastUpdated };
-                        showToast('GitHubから初期データをロードしました', 'success');
-                        isTextareaEmpty = false;
-                        clearTimeout(hideButtonTimer);
-                        hideButtonTimer = setTimeout(() => {
-                            githubButton.classList.add('hidden');
-                        }, hideButtonDelay);
-                        if (remoteData.styles) {
-                            applyStyles(remoteData.styles);
-                            // Update modal values based on remote styles
-                            fontSizeSlider.value = remoteData.styles.fontSize.replace('em', '');
-                            fontSizeValueSpan.textContent = remoteData.styles.fontSize;
-                            lineHeightSlider.value = remoteData.styles.lineHeight;
-                            lineHeightValueSpan.textContent = remoteData.styles.lineHeight;
-                            letterSpacingSlider.value = remoteData.styles.letterSpacing.replace('em', '');
-                            letterSpacingValueSpan.textContent = remoteData.styles.letterSpacing;
-                            for (const radio of fontFamilyRadios) {
-                                if (radio.value === remoteData.styles.fontFamily) {
-                                    radio.checked = true;
-                                    break;
-                                }
-                            }
-                            localStorage.setItem(editorStyleStorageKey, JSON.stringify(remoteData.styles));
-                        }
-                    } else {
-                        showIndicator('初期データロード失敗', 'error');
-                        isTextareaEmpty = true;
-                        githubButton.classList.remove('hidden');
-                    }
-                } else if (localData.text) {
-                    writingArea.value = localData.text;
-                    showToast('ローカルデータをロードしました', 'success');
-                    isTextareaEmpty = false;
-                    clearTimeout(hideButtonTimer);
-                    hideButtonTimer = setTimeout(() => {
-                        githubButton.classList.add('hidden');
-                    }, hideButtonDelay);
-                } else {
-                    showIndicator('入力待機');
-                    isTextareaEmpty = true;
-                    githubButton.classList.remove('hidden');
+                // テキスト内容の読み込み
+                const savedData = localStorage.getItem(localStorageKey);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    writingArea.value = data.text || '';
                 }
-                localStorage.setItem(localStorageKey, JSON.stringify(localData));
+                
                 adjustHeight();
                 adjustTextAlign();
             };
 
-            const save = async () => {
-                if (isSaving) return;
-                isSaving = true;
-                showIndicator('保存中...', 'updating');
-                const currentStyles = saveStyles();
+            const save = () => {
                 const contentToSave = writingArea.value;
-                const success = await pushToGitHub(contentToSave, currentStyles);
-                if (success) {
-                    showToast('保存完了', 'success');
-                }
-                isSaving = false;
+                const dataToSave = {
+                    text: contentToSave,
+                    lastUpdated: new Date().toISOString()
+                };
+                
+                localStorage.setItem(localStorageKey, JSON.stringify(dataToSave));
             };
 
             const handleInputChange = () => {
                 adjustHeight();
                 adjustTextAlign();
-                showIndicator('編集中');
                 clearTimeout(saveTimer);
                 saveTimer = setTimeout(save, saveDelay);
-                const currentTextareaEmpty = writingArea.value.trim() === '';
-                clearTimeout(hideButtonTimer);
-                if (currentTextareaEmpty) {
-                    githubButton.classList.remove('hidden');
-                } else {
-                    hideButtonTimer = setTimeout(() => {
-                        githubButton.classList.add('hidden');
-                    }, hideButtonDelay);
-                }
-                isTextareaEmpty = currentTextareaEmpty;
             };
 
             // 行数に応じてテキストの揃えを調整する関数
@@ -572,7 +314,8 @@
             modalOverlay.addEventListener('click', () => {
                 settingsModal.classList.remove('open');
                 modalOverlay.classList.remove('open');
-                save(); // 設定変更時に保存
+                saveStyles(); // 設定変更を保存
+                save(); // テキスト内容も保存
             });
 
             settingsModal.addEventListener('click', (event) => {
@@ -607,23 +350,11 @@
             // 入力時に高さを調整し、テキスト揃えを調整し、タイマーを開始
             writingArea.addEventListener('input', handleInputChange);
 
-            // 念のため、フォーカスが外れた場合にも保存処理を行う
+            // フォーカスが外れた場合にも保存処理を行う
             writingArea.addEventListener('blur', () => {
                 clearTimeout(saveTimer);
                 save();
             });
-
-            // 初期表示
-            showIndicator('入力待機');
-            if (writingArea.value.trim() === '') {
-                githubButton.classList.remove('hidden');
-            } else {
-                clearTimeout(hideButtonTimer);
-                hideButtonTimer = setTimeout(() => {
-                    githubButton.classList.add('hidden');
-                }, hideButtonDelay);
-            }
-            isTextareaEmpty = writingArea.value.trim() === '';
         });
     </script>
 </body>
