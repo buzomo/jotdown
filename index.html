@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漆黒のtextarea</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        #writingArea {
+            background-color: transparent;
+            color: #fff;
+            border: none;
+            outline: none;
+            font-size: 1.4em;
+            line-height: 1.8;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            width: 80%;
+            resize: none;
+            caret-color: #fff;
+            min-height: 100px;
+            max-height: 80vh;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 2px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 1px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        #indicator {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            font-size: 0.8em;
+            z-index: 1000;
+        }
+
+        #indicator.hidden {
+            display: none;
+        }
+
+        #indicator.updating {
+            background-color: lightgray;
+            color: #000;
+        }
+
+        #indicator.success {
+            background-color: green;
+        }
+
+        #indicator.error {
+            background-color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <textarea id="writingArea" autofocus></textarea>
+    <div id="indicator" class="hidden"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const writingArea = document.getElementById('writingArea');
+            const localStorageKey = 'myTextAreaData';
+            const indicator = document.getElementById('indicator');
+            const saveDelay = 3000; // 3秒後に保存
+
+            let isSaving = false;
+            let saveTimer;
+
+            const showIndicator = (message, className = '') => {
+                indicator.textContent = message;
+                indicator.className = `indicator ${className}`;
+                indicator.classList.remove('hidden');
+                if (className === 'success' || className === 'error') {
+                    setTimeout(() => {
+                        indicator.classList.add('hidden');
+                        indicator.textContent = '';
+                    }, 1500);
+                }
+            };
+
+            const showToast = (message, type) => {
+                console.log(`[${type.toUpperCase()}] ${message}`);
+                showIndicator(message, type);
+            };
+
+            async function getFileSHA() {
+                const repoUrl = localStorage.getItem('repo_url');
+                const apiKey = localStorage.getItem('gh_token');
+                if (!repoUrl || !apiKey) {
+                    showToast('リポジトリURLまたはAPIキーが設定されていません', 'error');
+                    throw new Error('リポジトリURLまたはAPIキーが設定されていません');
+                }
+                try {
+                    const response = await fetch(
+                        `${repoUrl}/contents/contents.json`,
+                        {
+                            headers: {
+                                'Authorization': `token ${apiKey}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        }
+                    );
+                    if (!response.ok) throw new Error('SHA取得失敗');
+                    const data = await response.json();
+                    return data.sha;
+                } catch (error) {
+                    showToast(`エラー: ${error.message}`, 'error');
+                    throw error;
+                }
+            }
+
+            async function pushToGitHub(content) {
+                const repoUrl = localStorage.getItem('repo_url');
+                const apiKey = localStorage.getItem('gh_token');
+                if (!repoUrl || !apiKey) {
+                    showToast('リポジトリURLまたはAPIキーが設定されていません', 'error');
+                    return false;
+                }
+                const controller = new AbortController();
+                let currentRequest = controller;
+
+                try {
+                    const sha = await getFileSHA();
+                    const response = await fetch(
+                        `${repoUrl}/contents/contents.json`,
+                        {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `token ${apiKey}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                message: `Auto-save ${new Date().toISOString()}`,
+                                content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))),
+                                sha: sha
+                            }),
+                            signal: controller.signal
+                        }
+                    );
+
+                    if (response.status === 409) {
+                        throw new Error('sha mismatch');
+                    }
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message);
+                    }
+
+                    return true;
+                } catch (error) {
+                    if (error.name === 'AbortError') return false;
+                    showToast(`GitHubへの保存エラー: ${error.message}`, 'error');
+                    return false;
+                } finally {
+                    currentRequest = null;
+                }
+            }
+
+            async function loadFromGitHub() {
+                const repoUrl = localStorage.getItem('repo_url');
+                const apiKey = localStorage.getItem('gh_token');
+                if (!repoUrl || !apiKey) {
+                    showToast('リポジトリURLまたはAPIキーが設定されていません', 'error');
+                    return null;
+                }
+                try {
+                    const response = await fetch(
+                        `${repoUrl}/contents/contents.json`,
+                        {
+                            headers: {
+                                'Authorization': `token ${apiKey}`,
+                                'Accept': 'application/vnd.github.v3+json',
+                                'Accept-Charset': 'utf-8'
+                            }
+                        }
+                    );
+                    if (!response.ok) {
+                        showToast('GitHubからのデータ取得に失敗しました', 'error');
+                        return null;
+                    }
+                    const data = await response.json();
+                    const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+                    return content;
+                } catch (error) {
+                    showToast(`GitHubからのロードエラー: ${error.message}`, 'error');
+                    return null;
+                }
+            }
+
+            const load = async () => {
+                showIndicator('ロード中...', 'updating');
+                const remoteData = await loadFromGitHub();
+                const localDataString = localStorage.getItem(localStorageKey);
+                let localData = localDataString ? JSON.parse(localDataString) : { text: '', LastUpdated: null };
+
+                if (remoteData && remoteData.text && remoteData.LastUpdated) {
+                    if (!localData.LastUpdated || new Date(remoteData.LastUpdated) > new Date(localData.LastUpdated)) {
+                        writingArea.value = remoteData.text;
+                        localData = { text: remoteData.text, LastUpdated: remoteData.LastUpdated };
+                        showToast('GitHubから最新データをロードしました', 'success');
+                    } else {
+                        writingArea.value = localData.text;
+                        showToast('ローカルデータは最新です', 'success');
+                    }
+                } else if (localData.text) {
+                    writingArea.value = localData.text;
+                    showToast('ローカルデータをロードしました', 'success');
+                } else {
+                    showIndicator('入力待機');
+                }
+                localStorage.setItem(localStorageKey, JSON.stringify(localData));
+                adjustHeight();
+                adjustTextAlign();
+            };
+
+            const save = async () => {
+                if (isSaving) return;
+                isSaving = true;
+                showIndicator('保存中...', 'updating');
+                const contentToSave = { text: writingArea.value, LastUpdated: new Date().toISOString() };
+                localStorage.setItem(localStorageKey, JSON.stringify(contentToSave));
+                const success = await pushToGitHub(contentToSave);
+                if (success) {
+                    showToast('保存完了', 'success');
+                }
+                isSaving = false;
+            };
+
+            const handleInputChange = () => {
+                adjustHeight();
+                adjustTextAlign();
+                showIndicator('編集中');
+                clearTimeout(saveTimer);
+                saveTimer = setTimeout(save, saveDelay);
+            };
+
+            // 行数に応じてテキストの揃えを調整する関数
+            const adjustTextAlign = () => {
+                const lines = writingArea.value.split('\n').length;
+                writingArea.style.textAlign = lines <= 1 ? 'center' : 'left';
+            };
+
+            // textareaの行数に応じて高さを調整する関数
+            const adjustHeight = () => {
+                const lines = writingArea.value.split('\n').length;
+                if (lines <= 1) {
+                    writingArea.style.height = 'auto';
+                } else {
+                    const minHeight = window.innerHeight * 0.2;
+                    const lineHeight = parseFloat(window.getComputedStyle(writingArea).lineHeight) || 20;
+                    const calculatedHeight = Math.max(minHeight, lines * lineHeight + 40);
+                    writingArea.style.height = Math.min(calculatedHeight, window.innerHeight * 0.8) + 'px';
+                }
+            };
+
+            // 初期ロード
+            load();
+
+            // 入力時に高さを調整し、テキスト揃えを調整し、タイマーを開始
+            writingArea.addEventListener('input', handleInputChange);
+
+            // 念のため、フォーカスが外れた場合にも保存処理を行う
+            writingArea.addEventListener('blur', () => {
+                clearTimeout(saveTimer);
+                save();
+            });
+
+            // 初期表示
+            showIndicator('入力待機');
+        });
+    </script>
+</body>
+
+</html>
